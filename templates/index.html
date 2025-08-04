@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Human Emotion Detection</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <h1>Human Emotion Detection</h1>
+  <div class="video-container">
+    <img src="{{ url_for('video') }}" width="720px">
+  </div>
+  <div class="buttons">
+    <a href="/stats">View Emotion Stats</a>
+  </div>
+</body>
+</html>
