@@ -1,16 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Human Emotion Detection</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <meta charset="UTF-8" />
+  <title>Real-Time Emotion Detection</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <style>
+    video { border: 2px solid #444; }
+    #result { font-size: 20px; margin-top: 10px; }
+  </style>
 </head>
 <body>
-  <h1>Human Emotion Detection</h1>
-  <div class="video-container">
-    <img src="{{ url_for('video') }}" width="720px">
-  </div>
-  <div class="buttons">
-    <a href="/stats">View Emotion Stats</a>
-  </div>
+  <h1>Real-Time Emotion Detection</h1>
+  <video id="video" width="640" height="480" autoplay></video>
+  <canvas id="canvas" width="640" height="480" style="display: none;"></canvas>
+  <div id="result">Emotion: ---</div>
+  <button id="start">Start Emotion Detection</button>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const resultDiv = document.getElementById('result');
+    const startButton = document.getElementById('start');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => { video.srcObject = stream; });
+
+    startButton.onclick = () => {
+      const ctx = canvas.getContext('2d');
+
+      setInterval(async () => {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(async (blob) => {
+          const formData = new FormData();
+          formData.append('file', blob, 'frame.jpg');
+
+          <script>
+  const backendURL = "https://backend-code-hms-1.onrender.com";
+
+  ...
+
+  const res = await fetch(`${backendURL}/predict`, {
+    method: 'POST',
+    body: formData
+  });
+
+          const data = await res.json();
+          if (data.results && data.results.length > 0) {
+            resultDiv.innerText = `Emotion: ${data.results[0].emotion} (${Math.round(data.results[0].confidence * 100)}%)`;
+          } else {
+            resultDiv.innerText = `Emotion: No face found`;
+          }
+        }, 'image/jpeg');
+
+      }, 1000); // every 1 second
+    };
+  </script>
 </body>
 </html>
