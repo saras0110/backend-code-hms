@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 # Load face detector and emotion model
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-model = load_model('emotion_model.h5')
+model = load_model('face_model.h5')
 emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
 
 # Store logs in memory for now
