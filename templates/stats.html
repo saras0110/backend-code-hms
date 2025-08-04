@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Emotion Stats</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h1>Emotion Stats</h1>
+  <canvas id="pieChart" width="400" height="400"></canvas>
+  <script>
+    const counts = {{ counts | tojson }};
+    const labels = Object.keys(counts);
+    const data = Object.values(counts);
+    
+    const ctx = document.getElementById('pieChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Emotion Stats',
+          data: data,
+          backgroundColor: [
+            '#ff6384', '#36a2eb', '#cc65fe',
+            '#ffce56', '#2ecc71', '#e67e22', '#95a5a6'
+          ]
+        }]
+      }
+    });
+  </script>
+</body>
+</html>
