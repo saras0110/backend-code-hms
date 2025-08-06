@@ -1,4 +1,3 @@
-/* emotion.js (in /static folder) */
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const resultDiv = document.getElementById('result');
@@ -22,25 +21,30 @@ function sendFrame() {
 
     canvas.toBlob(async (blob) => {
       const formData = new FormData();
-      formData.append('image', blob);
+      formData.append('image', blob, 'frame.jpg');  // Optional filename
 
       try {
-        const response = await fetch('/predict_emotion', {
+        const response = await fetch('/emotion', {
           method: 'POST',
           body: formData,
         });
+
+        if (!response.ok) {
+          throw new Error('Server error');
+        }
+
         const data = await response.json();
-        resultDiv.innerHTML = `Emotion: ${data.label} <br> ${data.emoji}`;
+
+        if (data.label && data.emoji) {
+          resultDiv.innerHTML = `Emotion: ${data.label} <br> ${data.emoji}`;
+        } else {
+          resultDiv.innerHTML = 'No emotion detected.';
+        }
       } catch (error) {
         resultDiv.textContent = 'Error detecting emotion.';
         console.error(error);
       }
     }, 'image/jpeg');
   }
-  setTimeout(sendFrame, 2000);
-}
 
-setupCamera().then(() => {
-  video.play();
-  sendFrame();
-});
+  setTimeout(sendFrame, 2000); //
