@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Face Detection System</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
   <h2>Choose Analysis</h2>
@@ -15,7 +16,5 @@
   <video id="video" autoplay></video>
   <canvas id="canvas" style="display:none;"></canvas>
   <p id="result"></p>
-
-  <script src="script.js"></script>
 </body>
 </html>
