@@ -32,7 +32,7 @@ def skin_page():
 
 # Load Emotion Detection Model
 try:
-    MODEL_PATH = os.path.join('models', 'face_model.h5')
+    MODEL_PATH = os.path.join('face_model.h5')
     emotion_model = load_model(MODEL_PATH)
 except Exception as e:
     print(f"⚠️ Failed to load emotion model: {e}")
