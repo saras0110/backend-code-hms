@@ -13,6 +13,11 @@ app = Flask(__name__, static_folder='static')
 def home():
     return render_template('index.html')
 
+@app.route('/system')
+def system_page():
+    return render_template('system.html')
+
+
 @app.route('/emotion_page')
 def emotion_page():
     return render_template('emotion.html')
