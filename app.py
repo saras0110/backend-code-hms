@@ -9,6 +9,37 @@ from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__, static_folder='static')
 
+# Load Emotion Detection Model (ONCE)
+emotion_model = None
+try:
+    MODEL_PATH = os.path.join('face_model.h5')  # Adjust path if in subfolder
+    emotion_model = load_model(MODEL_PATH)
+    print("✅ Emotion detection model loaded successfully.")
+except Exception as e:
+    print(f"❌ Failed to load emotion model: {e}")
+
+# Emotion Labels and Emoji Map
+emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+emoji_map = {
+    'Angry': '😠', 'Disgust': '🤢', 'Fear': '😨', 'Happy': '😄',
+    'Sad': '😢', 'Surprise': '😮', 'Neutral': '😐'
+}
+
+# Preprocess image for model
+def preprocess_image(image_base64):
+    try:
+        image_data = base64.b64decode(image_base64.split(',')[1])
+        image = Image.open(BytesIO(image_data)).convert('L')  # grayscale
+        image = image.resize((48, 48))
+        image = np.array(image) / 255.0
+        image = np.expand_dims(image, axis=(0, -1))  # (1, 48, 48, 1)
+        return image
+    except Exception as e:
+        print(f"⚠️ Error during preprocessing: {e}")
+        return None
+
+# ROUTES
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -16,7 +47,6 @@ def home():
 @app.route('/system')
 def system_page():
     return render_template('system.html')
-
 
 @app.route('/emotion_page')
 def emotion_page():
@@ -30,38 +60,24 @@ def structure_page():
 def skin_page():
     return render_template('skin.html')
 
-# Load Emotion Detection Model
-try:
-    MODEL_PATH = os.path.join('face_model.h5')
-    emotion_model = load_model(MODEL_PATH)
-except Exception as e:
-    print(f"⚠️ Failed to load emotion model: {e}")
-    emotion_model = None
-
-emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
-emoji_map = {
-    'Angry': '😠', 'Disgust': '🤢', 'Fear': '😨', 'Happy': '😄',
-    'Sad': '😢', 'Surprise': '😮', 'Neutral': '😐'
-}
-
-def preprocess_image(image_base64):
-    image_data = base64.b64decode(image_base64.split(',')[1])
-    image = Image.open(BytesIO(image_data)).convert('L')
-    image = image.resize((48, 48))
-    image = np.array(image) / 255.0
-    image = np.expand_dims(image, axis=(0, -1))
-    return image
-
 @app.route('/emotion', methods=['POST'])
 def detect_emotion():
-    if emotion_model is None:
-        return jsonify({'error': 'Emotion model not loaded'}), 500
+    if not emotion_model:
+        return jsonify({'error': 'Model not loaded'}), 500
 
     data = request.get_json()
-    image = preprocess_image(data['image'])
-    prediction = emotion_model.predict(image)[0]
-    label = emotion_labels[np.argmax(prediction)]
-    return jsonify({'label': label, 'emoji': emoji_map[label]})
+    image = preprocess_image(data.get('image', ''))
+
+    if image is None:
+        return jsonify({'error': 'Invalid image data'}), 400
+
+    try:
+        prediction = emotion_model.predict(image)[0]
+        label = emotion_labels[np.argmax(prediction)]
+        return jsonify({'label': label, 'emoji': emoji_map[label]})
+    except Exception as e:
+        print(f"❌ Prediction failed: {e}")
+        return jsonify({'error': 'Prediction failed'}), 500
 
 @app.route('/structure', methods=['POST'])
 def detect_structure():
@@ -71,6 +87,7 @@ def detect_structure():
 def detect_skin_type():
     return jsonify({'label': 'Oily Skin (Example)'})
 
+# Entry point
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
