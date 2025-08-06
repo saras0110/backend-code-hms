@@ -1,28 +1,32 @@
 body {
-  background: #f0f2f5;
-  font-family: Arial, sans-serif;
+  font-family: Arial;
+  background: #f5f7fa;
   text-align: center;
+  padding-top: 50px;
 }
 
-h1 {
-  color: #333;
-  margin-top: 20px;
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-.video-container {
-  margin: 20px auto;
-}
-
-.buttons a {
-  display: inline-block;
-  margin: 20px;
-  padding: 12px 20px;
-  background: #007bff;
+.btn, .button-group button {
+  padding: 15px 30px;
+  font-size: 18px;
+  margin: 10px;
+  cursor: pointer;
+  border-radius: 10px;
+  border: none;
+  background: #00b894;
   color: white;
-  text-decoration: none;
-  border-radius: 5px;
 }
 
-.buttons a:hover {
-  background: #0056b3;
+video {
+  margin-top: 20px;
+  width: 400px;
+  height: 300px;
+  border-radius: 10px;
+  border: 2px solid #0984e3;
 }
