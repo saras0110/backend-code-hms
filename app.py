@@ -69,10 +69,6 @@ def detect_structure():
 def detect_skin_type():
     return jsonify({'label': 'Oily Skin (Example)'})
 
-# Root route
-@app.route('/')
-def home():
-    return "✅ Backend Running Successfully"
 
 # Run app
 if __name__ == '__main__':
