@@ -5,3 +5,4 @@ keras
 opencv-python
 numpy
 pillow
+protobuf==5.28.3
