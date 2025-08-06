@@ -1,18 +1,66 @@
-<!-- emotion.html (Real-time Emotion Page) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Emotion Detection</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    video, canvas { width: 300px; height: 225px; }
+    #result { font-size: 24px; margin-top: 10px; }
+    .btn { margin-top: 15px; }
+  </style>
 </head>
 <body>
   <h2>Real-Time Emotion Detection</h2>
-  <video id="video" autoplay muted playsinline></video>
-  <canvas id="canvas" style="display: none;"></canvas>
-  <div id="result">Detecting...</div>
-  <br>
-  <a href="https://backend-code-hms.onrender.com/system"><button class="btn">Back</button></a>
-  <script src="{{ url_for('static', filename='emotion.js') }}"></script>
+  <video id="video" autoplay muted></video>
+  <div id="result">😊 Waiting...</div>
+  <button onclick="goBack()" class="btn">Back</button>
+
+  <script>
+    const video = document.getElementById('video');
+    const result = document.getElementById('result');
+
+    function goBack() {
+      window.location.href = '/system';
+    }
+
+    async function setupCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+      } catch (e) {
+        result.innerText = '❌ Cannot access camera';
+        console.error('Camera error:', e);
+      }
+    }
+
+    async function captureAndSend() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 300;
+      canvas.height = 225;
+      const context = canvas.getContext('2d');
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const image = canvas.toDataURL('image/jpeg');
+
+      try {
+        const response = await fetch('/emotion', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image })
+        });
+        const data = await response.json();
+        if (data.label && data.emoji) {
+          result.innerText = `${data.emoji} ${data.label}`;
+        } else {
+          result.innerText = '❌ Detection Failed';
+        }
+      } catch (e) {
+        result.innerText = '❌ Error sending image';
+        console.error('Detection error:', e);
+      }
+    }
+
+    setupCamera();
+    setInterval(captureAndSend, 2000); // Detect every 2 seconds
+  </script>
 </body>
 </html>
