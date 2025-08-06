@@ -1,20 +1,19 @@
+<!-- system.html (Selection Page) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Face Detection System</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-<script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
   <h2>Choose Analysis</h2>
   <div class="button-group">
-    <button onclick="startAnalysis('emotion')">Check Face Emotion</button>
-    <button onclick="startAnalysis('structure')">Check Facial Structure</button>
-    <button onclick="startAnalysis('skin')">Check Skin Type</button>
+    <a href="/emotion"><button>Check Face Emotion</button></a>
+    <a href="/structure"><button>Check Facial Structure</button></a>
+    <a href="/skin"><button>Check Skin Type</button></a>
   </div>
-  <video id="video" autoplay></video>
-  <canvas id="canvas" style="display:none;"></canvas>
-  <p id="result"></p>
+  <br>
+  <a href="/"><button class="btn">Back</button></a>
 </body>
 </html>
