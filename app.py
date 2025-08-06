@@ -1,13 +1,23 @@
 import os
-from flask import Flask, request, jsonify
 from keras.models import load_model
 import numpy as np
 import cv2
 import base64
 from io import BytesIO
 from PIL import Image
+from flask import Flask, render_template, request, jsonify
+# your other imports
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
+
+@app.route('/')
+def home():
+    return "✅ Backend Running Successfully"
+
+# ✅ Serve system.html page
+@app.route('/system')
+def system():
+    return render_template('system.html')
 
 # Load Emotion Detection Model
 try:
