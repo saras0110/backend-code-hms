@@ -1,72 +1,51 @@
-from flask import Flask, render_template, request, jsonify
-import cv2
+from flask import Flask, request, jsonify
 from keras.models import load_model
 import numpy as np
-import datetime
-import os
+import cv2
+import base64
+from io import BytesIO
 from PIL import Image
-import io
 
 app = Flask(__name__)
 
-# Load face detector and emotion model
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-model = load_model('face_model.h5')
-emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+# Load models
+emotion_model = load_model('emotion_model.h5')
+# structure_model = load_model('facial_structure_model.h5')
+# skin_model = load_model('skin_type_model.h5')
 
-# Store logs in memory
-emotion_log = []
+emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+emoji_map = {
+    'Angry': '😠', 'Disgust': '🤢', 'Fear': '😨', 'Happy': '😄',
+    'Sad': '😢', 'Surprise': '😮', 'Neutral': '😐'
+}
+
+def preprocess_image(image_base64):
+    image_data = base64.b64decode(image_base64.split(',')[1])
+    image = Image.open(BytesIO(image_data)).convert('L')
+    image = image.resize((48, 48))
+    image = np.array(image) / 255.0
+    image = np.expand_dims(image, axis=(0, -1))
+    return image
+
+@app.route('/emotion', methods=['POST'])
+def emotion():
+    data = request.get_json()
+    image = preprocess_image(data['image'])
+    prediction = emotion_model.predict(image)[0]
+    label = emotion_labels[np.argmax(prediction)]
+    return jsonify({'label': label, 'emoji': emoji_map[label]})
+
+@app.route('/structure', methods=['POST'])
+def structure():
+    return jsonify({'label': 'Oval (Example)'})  # Add actual model and prediction here
+
+@app.route('/skin', methods=['POST'])
+def skin():
+    return jsonify({'label': 'Oily Skin (Example)'})  # Add actual model and prediction here
 
 @app.route('/')
-def index():
-    return render_template('index.html')
+def home():
+    return "Backend Running Successfully"
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file uploaded'}), 400
-
-    file = request.files['file']
-    img = Image.open(io.BytesIO(file.read())).convert('RGB')
-    open_cv_image = np.array(img)
-    gray = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-
-    results = []
-    for (x, y, w, h) in faces:
-        roi_gray = gray[y:y+h, x:x+w]
-        roi_gray = cv2.resize(roi_gray, (48, 48))
-        roi_gray = roi_gray.astype('float') / 255.0
-        roi_gray = np.expand_dims(roi_gray, axis=0)
-        roi_gray = np.expand_dims(roi_gray, axis=-1)
-
-        preds = model.predict(roi_gray)[0]
-        emotion_probability = np.max(preds)
-        emotion_label = emotion_labels[preds.argmax()]
-
-        emotion_log.append({
-            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'emotion': emotion_label
-        })
-
-        results.append({
-            'emotion': emotion_label,
-            'confidence': float(emotion_probability)
-        })
-
-    return jsonify({'results': results})
-
-@app.route('/logs')
-def logs():
-    return jsonify(emotion_log)
-
-@app.route('/stats')
-def stats():
-    counts = {label: 0 for label in emotion_labels}
-    for log in emotion_log:
-        counts[log['emotion']] += 1
-    return jsonify(counts)
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+if __name__ == '__main__':
+    app.run(debug=True)
