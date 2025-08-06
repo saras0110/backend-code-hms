@@ -1,3 +1,4 @@
+import os  # 🔴 You forgot to import this
 from flask import Flask, request, jsonify
 from keras.models import load_model
 import numpy as np
@@ -37,16 +38,16 @@ def emotion():
 
 @app.route('/structure', methods=['POST'])
 def structure():
-    return jsonify({'label': 'Oval (Example)'})  # Add actual model and prediction here
+    return jsonify({'label': 'Oval (Example)'})  # You can update this later
 
 @app.route('/skin', methods=['POST'])
 def skin():
-    return jsonify({'label': 'Oily Skin (Example)'})  # Add actual model and prediction here
+    return jsonify({'label': 'Oily Skin (Example)'})  # Update with actual model
 
 @app.route('/')
 def home():
-    return "Backend Running Successfully"
+    return "✅ Backend Running Successfully"
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  # default to 10000 if PORT not set
+    port = int(os.environ.get("PORT", 10000))  # 🔁 Render injects PORT into environment
     app.run(host="0.0.0.0", port=port)
