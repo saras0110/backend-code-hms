@@ -1,60 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Real-Time Emotion Detection</title>
-  <link rel="stylesheet" href="/static/styles.css" />
-  <style>
-    video { border: 2px solid #444; }
-    #result { font-size: 20px; margin-top: 10px; }
-  </style>
+  <meta charset="UTF-8">
+  <title>Face Analyzer</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Real-Time Emotion Detection</h1>
-  <video id="video" width="640" height="480" autoplay></video>
-  <canvas id="canvas" width="640" height="480" style="display: none;"></canvas>
-  <div id="result">Emotion: ---</div>
-  <button id="start">Start Emotion Detection</button>
-
-  <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const resultDiv = document.getElementById('result');
-    const startButton = document.getElementById('start');
-
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => { video.srcObject = stream; });
-
-    startButton.onclick = () => {
-      const ctx = canvas.getContext('2d');
-
-      setInterval(async () => {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        canvas.toBlob(async (blob) => {
-          const formData = new FormData();
-          formData.append('file', blob, 'frame.jpg');
-
-          <script>
-  const backendURL = "https://backend-code-hms-1.onrender.com";
-
-  ...
-
-  const res = await fetch(`${backendURL}/predict`, {
-    method: 'POST',
-    body: formData
-  });
-
-          const data = await res.json();
-          if (data.results && data.results.length > 0) {
-            resultDiv.innerText = `Emotion: ${data.results[0].emotion} (${Math.round(data.results[0].confidence * 100)}%)`;
-          } else {
-            resultDiv.innerText = `Emotion: No face found`;
-          }
-        }, 'image/jpeg');
-
-      }, 1000); // every 1 second
-    };
-  </script>
+  <div class="center">
+    <h1>Face Emotion & Skin Analyzer</h1>
+    <a href="system.html"><button class="btn">Enter</button></a>
+  </div>
 </body>
 </html>
