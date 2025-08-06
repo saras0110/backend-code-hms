@@ -9,7 +9,7 @@ from PIL import Image
 app = Flask(__name__)
 
 # Load models
-emotion_model = load_model('emotion_model.h5')
+emotion_model = load_model('face_model.h5')
 # structure_model = load_model('facial_structure_model.h5')
 # skin_model = load_model('skin_type_model.h5')
 
@@ -48,4 +48,4 @@ def home():
     return "Backend Running Successfully"
 
 if __name__ == '__main__':
-    app.run(debug=True)
+     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
