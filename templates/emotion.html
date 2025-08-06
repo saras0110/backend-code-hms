@@ -1,0 +1,18 @@
+<!-- emotion.html (Real-time Emotion Page) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Emotion Detection</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <h2>Real-Time Emotion Detection</h2>
+  <video id="video" autoplay muted playsinline></video>
+  <canvas id="canvas" style="display: none;"></canvas>
+  <div id="result">Detecting...</div>
+  <br>
+  <a href="/system"><button class="btn">Back</button></a>
+  <script src="{{ url_for('static', filename='emotion.js') }}"></script>
+</body>
+</html>
