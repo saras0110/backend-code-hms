@@ -6,18 +6,24 @@ import base64
 from io import BytesIO
 from PIL import Image
 from flask import Flask, render_template, request, jsonify
-# your other imports
 
 app = Flask(__name__, static_folder='static')
 
 @app.route('/')
 def home():
-    return "✅ Backend Running Successfully"
+    return render_template('index.html')
 
-# ✅ Serve system.html page
-@app.route('/system')
-def system():
-    return render_template('system.html')
+@app.route('/emotion_page')
+def emotion_page():
+    return render_template('emotion.html')
+
+@app.route('/structure_page')
+def structure_page():
+    return render_template('structure.html')
+
+@app.route('/skin_page')
+def skin_page():
+    return render_template('skin.html')
 
 # Load Emotion Detection Model
 try:
@@ -27,27 +33,20 @@ except Exception as e:
     print(f"⚠️ Failed to load emotion model: {e}")
     emotion_model = None
 
-# Placeholder: You can add real models later
-# structure_model = load_model('facial_structure_model.h5')
-# skin_model = load_model('skin_type_model.h5')
-
-# Labels and Emoji mapping
 emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
 emoji_map = {
     'Angry': '😠', 'Disgust': '🤢', 'Fear': '😨', 'Happy': '😄',
     'Sad': '😢', 'Surprise': '😮', 'Neutral': '😐'
 }
 
-# Preprocess input image
 def preprocess_image(image_base64):
     image_data = base64.b64decode(image_base64.split(',')[1])
-    image = Image.open(BytesIO(image_data)).convert('L')  # grayscale
+    image = Image.open(BytesIO(image_data)).convert('L')
     image = image.resize((48, 48))
     image = np.array(image) / 255.0
     image = np.expand_dims(image, axis=(0, -1))
     return image
 
-# Route: Emotion Detection
 @app.route('/emotion', methods=['POST'])
 def detect_emotion():
     if emotion_model is None:
@@ -59,18 +58,14 @@ def detect_emotion():
     label = emotion_labels[np.argmax(prediction)]
     return jsonify({'label': label, 'emoji': emoji_map[label]})
 
-# Route: Structure Detection (Dummy)
 @app.route('/structure', methods=['POST'])
 def detect_structure():
     return jsonify({'label': 'Oval (Example)'})
 
-# Route: Skin Type Detection (Dummy)
 @app.route('/skin', methods=['POST'])
 def detect_skin_type():
     return jsonify({'label': 'Oily Skin (Example)'})
 
-
-# Run app
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
