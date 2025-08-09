@@ -8,7 +8,7 @@ async function setupCamera() {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     video.srcObject = stream;
   } catch (err) {
-    resultDiv.textContent = 'Camera access denied or not available.';
+    resultDiv.textContent = '📷 Camera access denied or unavailable.';
     console.error(err);
   }
 }
@@ -21,7 +21,7 @@ function sendFrame() {
 
     canvas.toBlob(async (blob) => {
       const formData = new FormData();
-      formData.append('image', blob, 'frame.jpg');  // Optional filename
+      formData.append('image', blob, 'frame.jpg');
 
       try {
         const response = await fetch('/emotion', {
@@ -29,22 +29,27 @@ function sendFrame() {
           body: formData,
         });
 
-        if (!response.ok) {
-          throw new Error('Server error');
-        }
-
         const data = await response.json();
+
+        if (!response.ok) {
+          resultDiv.innerHTML = `❌ Detection Failed<br>${data.error || 'Unknown server error'}`;
+          return;
+        }
 
         if (data.label && data.emoji) {
           resultDiv.innerHTML = `Emotion: ${data.label} <br> ${data.emoji}`;
         } else {
-          resultDiv.innerHTML = 'No emotion detected.';
+          resultDiv.innerHTML = '⚠️ No emotion detected.';
         }
       } catch (error) {
-        resultDiv.textContent = 'Error detecting emotion.';
+        resultDiv.innerHTML = `❌ Request Failed<br>${error.message}`;
         console.error(error);
       }
     }, 'image/jpeg');
   }
 
-  setTimeout(sendFrame, 2000); //
+  setTimeout(sendFrame, 2000);
+}
+
+setupCamera();
+sendFrame();
