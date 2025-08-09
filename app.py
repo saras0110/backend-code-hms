@@ -65,19 +65,23 @@ def detect_emotion():
     if not emotion_model:
         return jsonify({'error': 'Model not loaded'}), 500
 
-    data = request.get_json()
-    image = preprocess_image(data.get('image', ''))
-
-    if image is None:
-        return jsonify({'error': 'Invalid image data'}), 400
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image provided'}), 400
 
     try:
+        file = request.files['image']
+        image = Image.open(file.stream).convert('L')  # grayscale
+        image = image.resize((48, 48))
+        image = np.array(image) / 255.0
+        image = np.expand_dims(image, axis=(0, -1))  # (1, 48, 48, 1)
+
         prediction = emotion_model.predict(image)[0]
         label = emotion_labels[np.argmax(prediction)]
         return jsonify({'label': label, 'emoji': emoji_map[label]})
     except Exception as e:
         print(f"❌ Prediction failed: {e}")
         return jsonify({'error': 'Prediction failed'}), 500
+
 
 @app.route('/structure', methods=['POST'])
 def detect_structure():
