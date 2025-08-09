@@ -72,40 +72,38 @@ def detect_emotion():
         file = request.files['image']
         image = Image.open(file.stream)
 
-        print(f"📷 Original mode: {image.mode}, size: {image.size}")
+        print(f"📷 Received image mode: {image.mode}, size: {image.size}")
 
-        # Resize
+        # Resize to match training
         image = image.resize((48, 48))
 
-        # Try RGB first
+        # Detect expected channels from model input shape
         try:
-            img_rgb = image.convert('RGB')
-            img_rgb = np.array(img_rgb) / 255.0
-            img_rgb = np.expand_dims(img_rgb, axis=0)  # (1,48,48,3)
-            print(f"🔍 Trying RGB format: {img_rgb.shape}")
-            prediction = emotion_model.predict(img_rgb)[0]
-        except Exception as e_rgb:
-            print(f"⚠️ RGB prediction failed: {e_rgb}")
-            prediction = None
+            model_input_shape = emotion_model.input_shape  # e.g. (None, 48, 48, 1) or (None, 48, 48, 3)
+            expected_channels = model_input_shape[-1]
+        except Exception:
+            expected_channels = 1  # default to grayscale if unknown
 
-        # If RGB failed, try grayscale
-        if prediction is None:
-            try:
-                img_gray = image.convert('L')
-                img_gray = np.array(img_gray) / 255.0
-                img_gray = np.expand_dims(img_gray, axis=(0, -1))  # (1,48,48,1)
-                print(f"🔍 Trying Grayscale format: {img_gray.shape}")
-                prediction = emotion_model.predict(img_gray)[0]
-            except Exception as e_gray:
-                print(f"⚠️ Grayscale prediction failed: {e_gray}")
-                return jsonify({'error': 'Prediction failed for both RGB and Grayscale'}), 500
+        if expected_channels == 3:
+            print("🔍 Model expects RGB")
+            img_array = np.array(image.convert('RGB')) / 255.0
+        else:
+            print("🔍 Model expects Grayscale")
+            img_array = np.array(image.convert('L')) / 255.0
+            img_array = np.expand_dims(img_array, axis=-1)
 
+        img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
+
+        prediction = emotion_model.predict(img_array)[0]
         label = emotion_labels[np.argmax(prediction)]
+        print(f"✅ Prediction: {label}")
+
         return jsonify({'label': label, 'emoji': emoji_map[label]})
-    
+
     except Exception as e:
         print(f"❌ Prediction failed: {e}")
         return jsonify({'error': f'Prediction failed: {e}'}), 500
+
 
 @app.route('/structure', methods=['POST'])
 def detect_structure():
