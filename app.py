@@ -70,18 +70,42 @@ def detect_emotion():
 
     try:
         file = request.files['image']
-        image = Image.open(file.stream).convert('L')  # grayscale
-        image = image.resize((48, 48))
-        image = np.array(image) / 255.0
-        image = np.expand_dims(image, axis=(0, -1))  # (1, 48, 48, 1)
+        image = Image.open(file.stream)
 
-        prediction = emotion_model.predict(image)[0]
+        print(f"📷 Original mode: {image.mode}, size: {image.size}")
+
+        # Resize
+        image = image.resize((48, 48))
+
+        # Try RGB first
+        try:
+            img_rgb = image.convert('RGB')
+            img_rgb = np.array(img_rgb) / 255.0
+            img_rgb = np.expand_dims(img_rgb, axis=0)  # (1,48,48,3)
+            print(f"🔍 Trying RGB format: {img_rgb.shape}")
+            prediction = emotion_model.predict(img_rgb)[0]
+        except Exception as e_rgb:
+            print(f"⚠️ RGB prediction failed: {e_rgb}")
+            prediction = None
+
+        # If RGB failed, try grayscale
+        if prediction is None:
+            try:
+                img_gray = image.convert('L')
+                img_gray = np.array(img_gray) / 255.0
+                img_gray = np.expand_dims(img_gray, axis=(0, -1))  # (1,48,48,1)
+                print(f"🔍 Trying Grayscale format: {img_gray.shape}")
+                prediction = emotion_model.predict(img_gray)[0]
+            except Exception as e_gray:
+                print(f"⚠️ Grayscale prediction failed: {e_gray}")
+                return jsonify({'error': 'Prediction failed for both RGB and Grayscale'}), 500
+
         label = emotion_labels[np.argmax(prediction)]
         return jsonify({'label': label, 'emoji': emoji_map[label]})
+    
     except Exception as e:
         print(f"❌ Prediction failed: {e}")
-        return jsonify({'error': 'Prediction failed'}), 500
-
+        return jsonify({'error': f'Prediction failed: {e}'}), 500
 
 @app.route('/structure', methods=['POST'])
 def detect_structure():
