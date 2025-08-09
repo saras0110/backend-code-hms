@@ -74,7 +74,7 @@ def detect_emotion():
 
         print(f"📷 Received image mode: {image.mode}, size: {image.size}")
 
-        # Resize to match training
+        # Resize to match training size
         image = image.resize((48, 48))
 
         # Detect expected channels from model input shape
@@ -82,7 +82,7 @@ def detect_emotion():
             model_input_shape = emotion_model.input_shape  # e.g. (None, 48, 48, 1) or (None, 48, 48, 3)
             expected_channels = model_input_shape[-1]
         except Exception:
-            expected_channels = 1  # default to grayscale if unknown
+            expected_channels = 1  # default to grayscale
 
         if expected_channels == 3:
             print("🔍 Model expects RGB")
@@ -92,7 +92,7 @@ def detect_emotion():
             img_array = np.array(image.convert('L')) / 255.0
             img_array = np.expand_dims(img_array, axis=-1)
 
-        img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
+        img_array = np.expand_dims(img_array, axis=0)  # Batch dimension
 
         prediction = emotion_model.predict(img_array)[0]
         label = emotion_labels[np.argmax(prediction)]
@@ -101,9 +101,10 @@ def detect_emotion():
         return jsonify({'label': label, 'emoji': emoji_map[label]})
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print(f"❌ Prediction failed: {e}")
-        return jsonify({'error': f'Prediction failed: {e}'}), 500
-
+        return jsonify({'error': f'Prediction failed: {str(e)}'}), 500
 
 @app.route('/structure', methods=['POST'])
 def detect_structure():
