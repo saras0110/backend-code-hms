@@ -2,7 +2,8 @@ flask
 flask-cors
 numpy
 pillow
-tensorflow==2.20.0rc0
 opencv-python
-deepface==0.0.93
-tf-keras
+tensorflow==2.15.1
+tf-keras==2.15.0
+deepface==0.0.79
+retina-face
