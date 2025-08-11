@@ -4,5 +4,4 @@ opencv-python
 numpy
 pillow
 deepface==0.0.79
-mediapipe==0.10.14
 tensorflow==2.15.0
